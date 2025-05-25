@@ -17,11 +17,47 @@ services:
     image: rabbitmq:3-management
     container_name: orders_rabbitmq
     ports:
-      - "5672:5672"     # conexión desde backend
-      - "15672:15672"   # panel de gestión web
+      - "5672:5672"
+      - "15672:15672" # Management UI
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+
+  nestjs:
+    build: .
+    container_name: orders_backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: gerry123
+      POSTGRES_DB: DataBase
+      POSTGRES_HOST: postgres
+      JWT_SECRET: supersecret123
+      JWT_EXP: 3600s
+    volumes:
+      - .:/app
+    command: npm run start:dev
+
+  listener:
+    build: .
+    container_name: orders_listener
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: gerry123
+      POSTGRES_DB: DataBase
+      POSTGRES_HOST: postgres
+      JWT_SECRET: supersecret123
+      JWT_EXP: 3600s
+    volumes:
+      - .:/app
+    command: npx ts-node src/microservices/main.listener.ts
 
 volumes:
   pgdata:
