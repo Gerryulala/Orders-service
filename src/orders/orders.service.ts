@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './order.entity';
@@ -12,12 +14,17 @@ export class OrdersService {
   constructor(
     @InjectRepository(Order)
     private repo: Repository<Order>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.client = ClientProxyFactory.create({
       transport: Transport.RMQ,
       options: {
-        urls: ['amqp://localhost:5672'],
-        queue: 'orders_queue',
+        urls: [
+          process.env.APP_ENV === 'docker'
+            ? `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@rabbitmq:${process.env.RABBITMQ_PORT}`
+            : `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@localhost:${process.env.RABBITMQ_PORT}`,
+        ],
+        queue: process.env.RABBITMQ_QUEUE || 'orders_queue',
         queueOptions: { durable: false },
       },
     });
@@ -27,13 +34,33 @@ export class OrdersService {
     const order = this.repo.create(dto);
     const saved = await this.repo.save(order);
 
-    this.client.emit('order_created', saved); // 🐇 Emitir a RabbitMQ
+    this.client.emit('order_created', saved);
+
+    // ❌ Invalida cache de Redis tras crear
+    await this.cacheManager.del('orders');
 
     return saved;
   }
 
-  findAll() {
-    return this.repo.find();
+  async findAll() {
+    const cacheKey = 'orders';
+    const cached = await this.cacheManager.get(cacheKey);
+
+    if (cached) {
+      console.log('💾 Usando cache desde Redis!');
+      return cached;
+    }
+
+    const orders = await this.repo.find();
+    const ttl = parseInt(process.env.REDIS_TTL || '60');
+
+    // ✅ Set cache correctamente
+    await this.cacheManager.set(cacheKey, orders, ttl);
+
+    const test = await this.cacheManager.get(cacheKey);
+    console.log('🚀 Cache creado en Redis:', test ? '✔️ OK' : '❌ Falló');
+
+    return orders;
   }
 
   findOne(id: number) {

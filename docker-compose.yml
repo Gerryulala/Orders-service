@@ -18,10 +18,16 @@ services:
     container_name: orders_rabbitmq
     ports:
       - "5672:5672"
-      - "15672:15672" # Management UI
+      - "15672:15672" # RabbitMQ UI
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+
+  redis:
+    image: redis:7
+    container_name: orders_redis
+    ports:
+      - "6379:6379"
 
   nestjs:
     build: .
@@ -31,13 +37,21 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+      - redis
     environment:
+      APP_ENV: docker
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: gerry123
       POSTGRES_DB: DataBase
       POSTGRES_HOST: postgres
       JWT_SECRET: supersecret123
       JWT_EXP: 3600s
+      REDIS_PORT: 6379
+      REDIS_TTL: 60
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
+      RABBITMQ_PORT: 5672
+      RABBITMQ_QUEUE: orders_queue
     volumes:
       - .:/app
     command: npm run start:dev
@@ -48,13 +62,21 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+      - redis
     environment:
+      APP_ENV: docker
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: gerry123
       POSTGRES_DB: DataBase
       POSTGRES_HOST: postgres
       JWT_SECRET: supersecret123
       JWT_EXP: 3600s
+      REDIS_PORT: 6379
+      REDIS_TTL: 60
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
+      RABBITMQ_PORT: 5672
+      RABBITMQ_QUEUE: orders_queue
     volumes:
       - .:/app
     command: npx ts-node src/microservices/main.listener.ts
