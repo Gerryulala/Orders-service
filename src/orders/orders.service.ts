@@ -31,6 +31,7 @@ export class OrdersService {
   }
 
   async create(dto: CreateOrderDto) {
+      console.log('📥 Recibiendo orden:', dto);
     const order = this.repo.create(dto);
     const saved = await this.repo.save(order);
 

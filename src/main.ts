@@ -6,9 +6,16 @@ import * as process from 'process';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // ✅ Habilita CORS para tu frontend
+  app.enableCors({
+    origin: 'http://localhost:5173', // permite solo tu frontend
+    credentials: true,
+  });
+
   app.useGlobalPipes(new ValidationPipe());
 
-  // Microservicio para eventos (RabbitMQ)
+  // ✅ Conexión a microservicio RabbitMQ
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
@@ -18,7 +25,9 @@ async function bootstrap() {
           : `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@localhost:${process.env.RABBITMQ_PORT}`,
       ],
       queue: process.env.RABBITMQ_QUEUE || 'orders_queue',
-      queueOptions: { durable: false },
+      queueOptions: {
+        durable: false,
+      },
     },
   });
 

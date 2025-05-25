@@ -23,10 +23,16 @@ export class OrdersController {
   ) {}
 
   @Post()
-  create(@Body() dto: CreateOrderDto, @Req() req) {
+  async create(@Body() dto: CreateOrderDto, @Req() req) {
     const userId = req.user.userId;
     dto.user_id = userId;
-    return this.ordersService.create(dto);
+
+    const orden = await this.ordersService.create(dto);
+
+    return {
+      message: 'Orden creada con éxito',
+      orden,
+    };
   }
 
   @Get()
