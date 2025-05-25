@@ -49,16 +49,16 @@ npm install
 
 ### Crea un archivo .env (usa esto como base)
 
-# APP MODE
+# APP MODE docker si lo levantar con docker si lo levantas el local local
 
-APP_ENV=local
+APP_ENV=local 
 
 # JWT
 
 JWT_SECRET=supersecret123
 JWT_EXP=3600s
 
-# PostgreSQL
+# PostgreSQL postgres si lo levantas con docker si es local localhost
 
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
@@ -66,7 +66,7 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=gerry123
 POSTGRES_DB=DataBase
 
-# Redis
+# Redis si lo levantas con docker si es local 127.0.0.1
 
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379

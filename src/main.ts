@@ -32,6 +32,6 @@ async function bootstrap() {
   });
 
   await app.startAllMicroservices();
-  await app.listen(3000);
+  await app.listen(process.env.APP_ENV === 'docker' ? 3000 : 3001);
 }
 bootstrap();
