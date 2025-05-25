@@ -3,7 +3,7 @@ import { CacheModule } from '@nestjs/cache-manager'; // ✅ Este es el correcto
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
-import { OrdersEventsController } from './orders.events.controller';
+import { OrdersEventsController } from './events/orders.events.controller';
 import { Order } from './order.entity';
 import { typeOrmConfig } from '../typeorm.config';
 

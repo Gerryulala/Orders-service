@@ -56,7 +56,7 @@ npm run start:dev
 ### 4. Ejecuta el microservicio que simula la notificación
 
 ```bash
-npx ts-node src/main.listener.ts
+npx ts-node src/microservices/main.listener.ts
 ```
 
 #### Este microservicio escucha el evento `order_created` y muestra en consola:

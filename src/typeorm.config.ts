@@ -1,6 +1,6 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Order } from './orders/order.entity';
-import { User } from './users/user.entity/user.entity';
+import { User } from './users/user.entity';
 import * as dotenv from 'dotenv';
 
 // Carga el .env antes de usar las variables
