@@ -1,18 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as morgan from 'morgan';
-import * as dotenv from 'dotenv';
-
-// Carga las variables de entorno
-dotenv.config();
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ValidationPipe } from '@nestjs/common';
+import * as process from 'process';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe());
 
-  app.use(morgan('dev'));
+  // Microservicio para eventos (RabbitMQ)
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [
+        process.env.APP_ENV === 'docker'
+          ? `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@rabbitmq:${process.env.RABBITMQ_PORT}`
+          : `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@localhost:${process.env.RABBITMQ_PORT}`,
+      ],
+      queue: process.env.RABBITMQ_QUEUE || 'orders_queue',
+      queueOptions: { durable: false },
+    },
+  });
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`🚀 App corriendo en http://localhost:${port}`);
+  await app.startAllMicroservices();
+  await app.listen(3000);
 }
 bootstrap();

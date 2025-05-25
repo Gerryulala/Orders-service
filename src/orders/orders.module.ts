@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager'; // ✅ Este es el correcto
+import { CacheModule } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
+
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { OrdersEventsController } from './events/orders.events.controller';
@@ -9,7 +11,11 @@ import { typeOrmConfig } from '../typeorm.config';
 
 @Module({
   imports: [
-    CacheModule.register(), // 👈 Necesario para el CACHE_MANAGER en listener
+    ConfigModule.forRoot({ isGlobal: true }), // 👈 carga .env
+    CacheModule.register({
+      ttl: parseInt(process.env.REDIS_TTL || '600'),
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot(typeOrmConfig),
     TypeOrmModule.forFeature([Order]),
   ],
