@@ -100,6 +100,21 @@ Esto iniciará tanto:
 El servidor REST (/orders, /auth)
 
 Como el microservicio de eventos (order_created)
+## NOTA 
+Si corriste el *npm run start:dev* antes que el *docker-compose up -d* quiza te salga un error de "llave duplicada viola restricción de unicidad «pg_class_relname_nsp_index»" paara solucionarlo ejecuta el *docker-compose up -d* y despues para limpiar completamente tu base de datos
+```bash
+Si usas Docker: docker-compose down -v
+``` 
+Esto elimina contenedores y volúmenes persistentes, incluyendo PostgreSQL.
+
+Luego:
+```bash 
+docker-compose up -d
+``` 
+y vuelve a ejecutar:
+```bash 
+npm run start:dev
+``` 
 
 #### Endpoints disponibles:
 
